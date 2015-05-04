@@ -14,7 +14,6 @@
 package hms.webrtc.demo.controller;
 
 
-import hms.webrtc.api.WebRTCApi;
 import hms.webrtc.demo.controller.bean.AdItemForm;
 import hms.webrtc.demo.controller.bean.AdvertisementType;
 import hms.webrtc.demo.domain.AdItem;
@@ -51,11 +50,8 @@ public class HomeController {
     private static final String FILE_UPLOAD_LOCATION = "../webapps/images/";
     private String uploadPosterURL;
 
-
     @Autowired
     private AdItemService adItemService;
-
-    private WebRTCApi webRTCApi = new WebRTCApi();
 
 
     @RequestMapping(value = "/listAds", method = RequestMethod.GET)

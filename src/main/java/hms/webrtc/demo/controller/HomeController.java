@@ -51,6 +51,17 @@ public class HomeController {
     private static final String FILE_UPLOAD_LOCATION = "../webapps/images/";
     private String uploadPosterURL;
 
+    @Value("${app.id}")
+    public String appId;
+
+    @Value("${app.password}")
+    public String appPassword;
+
+    @Value("${create.component.url}")
+    public String createComponentUrl;
+
+    @Value("${request.script.url}")
+    public String reqScriptUrl;
 
     @Autowired
     private AdItemService adItemService;
@@ -87,14 +98,32 @@ public class HomeController {
         modelAndView.addObject("adItemForm", adItemForm);
         modelAndView.setViewName("createAdItem");
 
-        // TODO Implement WebRTC API to Provision Component / Request Script and replace "adId"  & "Script" parameters.
-
         if (!result.hasErrors()) {
-            boolean isItemCreatedSuccessfully
-                    = adItemService.saveAdItem(adItemForm, "adId", "Script", uploadPosterURL);
-            if (isItemCreatedSuccessfully) {
-                modelAndView.addObject("successMessage", "You have Successfully Created the Ad unit.");
+            String adId = UUID.randomUUID().toString();
+            Map<String, Object> createComponentResponse = webRTCApi.createComponent(createComponentUrl, appId, appPassword,
+                    adId, adItemForm.getMobileNumber());
+
+            if (ResponseCode.S1000.name().equals(createComponentResponse.get(ResponseKey.STATUS_CODE))) {
+                Map<String, Object> requestedScriptResp = webRTCApi.requestScript(reqScriptUrl, appId, appPassword, adId);
+
+                if (ResponseCode.S1000.name().equals(requestedScriptResp.get(ResponseKey.STATUS_CODE))) {
+                    String requestedScript =  (String) requestedScriptResp.get(ResponseKey.SCRIPT);
+                    boolean isAdItemCreated = adItemService.saveAdItem(adItemForm, adId,
+                            requestedScript, uploadPosterURL);
+
+                    if (isAdItemCreated) {
+                        modelAndView.addObject("successMessage", "You have Successfully Created the Ad unit.");
+                    } else {
+                        logger.debug("Error occurred while Saving to DB.");
+                        modelAndView.addObject("errorMessage", "Error occurred while processing.");
+                    }
+                } else {
+                    logger.debug("Error occurred while processing Requested Script.");
+                    modelAndView.addObject("errorMessage", "Error occurred while processing.");
+                }
+
             } else {
+                logger.debug("Error occurred while processing - create component.");
                 modelAndView.addObject("errorMessage", "Error occurred while processing.");
             }
         }

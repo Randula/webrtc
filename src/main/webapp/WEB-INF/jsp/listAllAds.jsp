@@ -38,10 +38,8 @@
                             </div>
                             <div class="caption">
                                 <h3>${adItem.adTopic}</h3>
-                                <h5>Product Description Here</h5>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <img src="img/button0.png">
                                     </div>
                                     <div class="col-md-6">
                                         <p class="product-price">${adItem.itemPrice}</p>

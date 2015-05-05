@@ -41,6 +41,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.security.Principal;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Controller
 public class HomeController {
@@ -53,6 +55,17 @@ public class HomeController {
     @Autowired
     private AdItemService adItemService;
 
+    @Value("${msisdn.pattern.one}")
+    public String msisdnPatternOne;
+
+    @Value("${msisdn.pattern.two}")
+    public String msisdnPatternTwo;
+
+    @Value("${code.one}")
+    public String codeOne;
+
+    @Value("${code.two}")
+    public String codeTwo;
 
     @RequestMapping(value = "/listAds", method = RequestMethod.GET)
     public ModelAndView homePage(ModelMap model) {
@@ -87,7 +100,7 @@ public class HomeController {
 
         if (!result.hasErrors()) {
             boolean isItemCreatedSuccessfully
-                    = adItemService.saveAdItem(adItemForm, "adId", "Script", uploadPosterURL);
+                    = adItemService.saveAdItem(adItemForm, "adId", "", uploadPosterURL, formatMobileNumber(adItemForm.getMobileNumber()));
             if (isItemCreatedSuccessfully) {
                 modelAndView.addObject("successMessage", "You have Successfully Created the Ad unit.");
             } else {
@@ -168,6 +181,28 @@ public class HomeController {
         }
         createParentPathIfNotExists(f.getParentFile());
         f.mkdir();
+    }
+
+
+    private String formatMobileNumber(String mobileNumber) {
+        Pattern patternOne = createPattern(msisdnPatternOne);
+        Pattern patternTwo = createPattern(msisdnPatternTwo);
+        if (isMatching(mobileNumber, patternOne)) {
+            return codeOne + mobileNumber;
+        } else if (isMatching(mobileNumber, patternTwo)) {
+            return codeTwo + mobileNumber.replaceFirst("0", "");
+        } else {
+            return codeTwo + mobileNumber;
+        }
+    }
+
+    public Pattern createPattern(String patternText) {
+        return Pattern.compile(patternText);
+    }
+
+    public boolean isMatching(String data, Pattern pattern) {
+        Matcher matcher = pattern.matcher(data);
+        return matcher.matches();
     }
 
     public String getUploadPosterURL() {

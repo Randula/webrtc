@@ -34,17 +34,13 @@ public class AdItemService {
 
     @Autowired
     private AdItemDao adItemDao;
-    private String msisdnPatternOne;
-    private String msisdnPatternTwo;
-    private String codeOne;
-    private String codeTwo;
 
     private static final Logger logger = LoggerFactory.getLogger(AdItemService.class);
 
 
-    public boolean saveAdItem(AdItemForm adItemForm, String adId, String requestedScript, String uploadPosterURL) {
+    public boolean saveAdItem(AdItemForm adItemForm, String adId, String requestedScript, String uploadPosterURL, String mobileNumber) {
         try {
-            AdItem adItem = createAdItem(adItemForm, uploadPosterURL, adId, requestedScript);
+            AdItem adItem = createAdItem(adItemForm, uploadPosterURL, adId, requestedScript, mobileNumber);
             adItemDao.save(adItem);
             logger.debug("Ad item Created Successfully.");
             return true;
@@ -55,13 +51,13 @@ public class AdItemService {
     }
 
     private AdItem createAdItem(AdItemForm adItemForm, String uploadPosterURL, String adId,
-                                String requestedScript) {
+                                String requestedScript, String mobileNumber) {
         AdItem adItem = new AdItem();
         adItem.setAdTopic(adItemForm.getAdTopic());
         adItem.setAdCategory(adItemForm.getAdvertisementType().name());
         adItem.setAdDescription(adItemForm.getAdDescription());
         adItem.setItemPrice(adItemForm.getItemPrice());
-        adItem.setMobileNumber(createCorrectMobileNumber(adItemForm.getMobileNumber()));
+        adItem.setMobileNumber(mobileNumber);
         adItem.setPosterUrl(uploadPosterURL);
         adItem.setDate(new Date());
         adItem.setAdId(adId);
@@ -69,26 +65,6 @@ public class AdItemService {
         return adItem;
     }
 
-    private String createCorrectMobileNumber(String mobileNumber) {
-        Pattern patternOne = createPattern(msisdnPatternOne);
-        Pattern patternTwo = createPattern(msisdnPatternTwo);
-        if (isMatching(mobileNumber, patternOne)) {
-            return codeOne + mobileNumber;
-        } else if (isMatching(mobileNumber, patternTwo)) {
-            return codeTwo + mobileNumber.replaceFirst("0", "");
-        } else {
-            return codeTwo + mobileNumber;
-        }
-    }
-
-    public Pattern createPattern(String patternText) {
-        return Pattern.compile(patternText);
-    }
-
-    public boolean isMatching(String data, Pattern pattern) {
-        Matcher matcher = pattern.matcher(data);
-        return matcher.matches();
-    }
 
     public List<AdItem> getAllAdItems() {
         return adItemDao.getAllAdItems();
@@ -98,21 +74,4 @@ public class AdItemService {
         return adItemDao.getAdUnitById(adItemId);
     }
 
-
-    public void setMsisdnPatternOne(String msisdnPatternOne) {
-        this.msisdnPatternOne = msisdnPatternOne;
-    }
-
-    public void setMsisdnPatternTwo(String msisdnPatternTwo) {
-        this.msisdnPatternTwo = msisdnPatternTwo;
-    }
-
-
-    public void setCodeOne(String codeOne) {
-        this.codeOne = codeOne;
-    }
-
-    public void setCodeTwo(String codeTwo) {
-        this.codeTwo = codeTwo;
-    }
 }

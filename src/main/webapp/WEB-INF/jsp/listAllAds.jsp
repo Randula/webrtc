@@ -38,6 +38,7 @@
                             </div>
                             <div class="caption">
                                 <h3>${adItem.adTopic}</h3>
+                                <h5>Product Description Here</h5>
                                 <div class="row">
                                     <div class="col-md-6">
                                     </div>
